@@ -39,6 +39,7 @@ Ikuti langkah-langkah berikut untuk menjalankan project di komputer lokal (Local
    - Aktifkan Virtual Environment:
      Windows:
         ```bash
+        python -m venv venv
         venv\Scripts\activate
         ```
      Mac / Linux:
