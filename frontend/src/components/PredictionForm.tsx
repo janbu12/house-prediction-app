@@ -104,11 +104,11 @@ export default function PredictionForm() {
         handleSubmit(e);
       }}>
         <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col md:flex-row md:flex-wrap gap-3">
             {steps.map((s, idx) => (
               <div
                 key={s.key}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition w-full md:w-auto ${
                   idx === step
                     ? "border-slate-900 dark:border-slate-100 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white"
                     : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400"
@@ -119,16 +119,16 @@ export default function PredictionForm() {
                 }`}>
                   {idx + 1}
                 </span>
-                <div>
-                  <div className="text-sm font-semibold">{s.title}</div>
-                  <div className="text-xs">{s.description}</div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold leading-tight">{s.title}</div>
+                  <div className="text-xs leading-tight">{s.description}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {fields
             .filter(f => currentStep.fields.includes(f.name as (typeof currentStep.fields)[number]))
             .map(field => (
