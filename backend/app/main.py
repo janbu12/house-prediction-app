@@ -11,6 +11,8 @@ import joblib
 model3 = joblib.load("poly_ridge_model_3.joblib")
 poly3 = joblib.load("poly_transform_3.joblib")
 
+SQFT_PER_M2 = 10.7639
+
 def get_usd_to_idr():
     try:
         url = "https://v6.exchangerate-api.com/v6/25661eecb19ce735a51b4f3c/latest/USD"
@@ -68,7 +70,19 @@ class HouseInput(BaseModel):
 # =====================
 @app.post("/predict")
 def predict_price(data: HouseInput):
-    x_raw = np.array([[getattr(data, f) for f in FEATURE_ORDER]])
+    # Terima input dalam m2 dari frontend, lalu konversi ke sqft agar sesuai dengan
+    # model yang dilatih memakai satuan square feet.
+    sqft_converted = {
+        "sqft_living": data.sqft_living * SQFT_PER_M2,
+        "sqft_lot": data.sqft_lot * SQFT_PER_M2,
+        "sqft_above": data.sqft_above * SQFT_PER_M2,
+        "sqft_basement": data.sqft_basement * SQFT_PER_M2,
+    }
+
+    x_raw = np.array([[
+        sqft_converted.get(f, getattr(data, f))
+        for f in FEATURE_ORDER
+    ]])
     x_poly = poly3.transform(x_raw)
 
     price_usd = float(model3.predict(x_poly)[0])
