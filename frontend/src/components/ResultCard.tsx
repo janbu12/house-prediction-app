@@ -9,7 +9,7 @@ export default function ResultCard({ result }: ResultCardProps) {
     <div
       className="
         mt-8 p-8 rounded-2xl
-        bg-gradient-to-r from-slate-900 to-slate-800
+        bg-linear-to-r from-slate-900 to-slate-700
         text-white text-center shadow-xl
         animate-fade-in
       "

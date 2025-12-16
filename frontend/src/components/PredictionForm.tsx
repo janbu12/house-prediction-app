@@ -9,7 +9,7 @@ const initialState: PredictionInput = {
   sqft_living: 0,
   sqft_lot: 0,
   floors: 0,
-  waterfront: 0,
+  waterfront: -1,
   condition: 0,
   grade: 0,
   sqft_above: 0,
@@ -23,24 +23,27 @@ const fields: {
   label: string;
   helper: string;
   type?: "binary";
+  min?: number;
+  max?: number;
+  step?: number;
 }[] = [
-  { name: "bedrooms", label: "Jumlah kamar tidur", helper: "Masukkan jumlah kamar tidur (bilangan bulat)." },
-  { name: "bathrooms", label: "Jumlah kamar mandi", helper: "Boleh desimal, misal 1.5 untuk 1 kamar mandi + 1 toilet." },
-  { name: "sqft_living", label: "Luas bangunan (m2)", helper: "Isi dalam meter persegi" },
-  { name: "sqft_lot", label: "Luas tanah (m2)", helper: "Isi dalam meter persegi" },
-  { name: "floors", label: "Jumlah lantai", helper: "Total lantai bangunan" },
+  { name: "bedrooms", label: "Jumlah kamar tidur", helper: "Masukkan jumlah kamar tidur (bilangan bulat).", min: 1, step: 1 },
+  { name: "bathrooms", label: "Jumlah kamar mandi", helper: "Boleh desimal, misal 1.5 untuk 1 kamar mandi + 1 toilet.", min: 1, step: 0.5 },
+  { name: "sqft_living", label: "Luas bangunan (m2)", helper: "Isi dalam meter persegi", min: 0 },
+  { name: "sqft_lot", label: "Luas tanah (m2)", helper: "Isi dalam meter persegi", min: 0 },
+  { name: "floors", label: "Jumlah lantai", helper: "Total lantai bangunan", min: 1, step: 1 },
   {
     name: "waterfront",
     label: "Tepi laut?",
     helper: "Pilih Iya jika rumah punya frontage/akses langsung ke laut/danau/sungai; jika tidak, pilih Tidak.",
     type: "binary",
   },
-  { name: "condition", label: "Kondisi bangunan", helper: "Skala 1 (buruk) sampai 5 (sangat baik)." },
-  { name: "grade", label: "Grade konstruksi", helper: "Skala 1 - 13 (kualitas material/arsitektur)." },
-  { name: "sqft_above", label: "Luas di atas tanah (m2)", helper: "Luas ruang di atas permukaan tanah dalam meter persegi (otomatis dikonversi ke sqft)." },
-  { name: "sqft_basement", label: "Luas basement (m2)", helper: "Isi 0 jika tidak ada basement; meter persegi, dikonversi ke sqft." },
-  { name: "yr_built", label: "Tahun dibangun", helper: "Contoh: 1995." },
-  { name: "yr_renovated", label: "Tahun renovasi", helper: "Isi 0 jika belum pernah renovasi, atau tahun renovasi terakhir." },
+  { name: "condition", label: "Kondisi bangunan", helper: "Skala 1 (buruk) sampai 5 (sangat baik).", min: 1, max: 5, step: 1 },
+  { name: "grade", label: "Grade konstruksi", helper: "Skala 1 - 13 (kualitas material/arsitektur).", min: 1, max: 13, step: 1 },
+  { name: "sqft_above", label: "Luas di atas tanah (m²)", helper: "Luas ruang di atas permukaan tanah dalam meter persegi.", min: 0 },
+  { name: "sqft_basement", label: "Luas basement (m²)", helper: "Isi 0 jika tidak ada basement; meter persegi.", min: 0 },
+  { name: "yr_built", label: "Tahun dibangun", helper: "Contoh: 1995.", min: 1800, max: new Date().getFullYear(), step: 1 },
+  { name: "yr_renovated", label: "Tahun renovasi", helper: "Isi 0 jika belum pernah renovasi, atau tahun renovasi terakhir.", min: 0, max: new Date().getFullYear(), step: 1 },
 ];
 
 const steps = [
@@ -66,13 +69,23 @@ const steps = [
 
 export default function PredictionForm() {
   const [form, setForm] = useState<PredictionInput>(initialState);
+  const [filled, setFilled] = useState<Record<keyof PredictionInput, boolean>>(
+    Object.keys(initialState).reduce(
+      (acc, key) => ({ ...acc, [key]: false }),
+      {} as Record<keyof PredictionInput, boolean>
+    )
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<PredictionResponse | null>(null);
-   const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0);
+  const [showErrors, setShowErrors] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: Number(value) }));
+    const hasValue = value !== "";
+    setFilled(prev => ({ ...prev, [name]: hasValue }));
+    setForm(prev => ({ ...prev, [name]: hasValue ? Number(value) : 0 }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -92,17 +105,41 @@ export default function PredictionForm() {
 
   const isLastStep = step === steps.length - 1;
   const currentStep = steps[step];
+  const canProceedStep = currentStep.fields.every(f => filled[f]);
+  const allFilled = steps.every(s => s.fields.every(f => filled[f]));
+  const notifyMissing = (fieldsList: readonly (keyof PredictionInput)[]) => {
+    const missing = fieldsList.find(f => !filled[f]);
+    if (missing) {
+      const label = fields.find(f => f.name === missing)?.label ?? missing;
+      setToast(`Harap isi ${label} terlebih dahulu.`);
+      setTimeout(() => setToast(null), 2200);
+    }
+  };
 
   return (
     <>
-      <form onSubmit={e => {
-        e.preventDefault();
-        if (!isLastStep) {
-          setStep(prev => Math.min(prev + 1, steps.length - 1));
-          return;
-        }
-        handleSubmit(e);
-      }}>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          if (!isLastStep) {
+            if (canProceedStep) {
+              setShowErrors(false);
+              setStep(prev => Math.min(prev + 1, steps.length - 1));
+            } else {
+              setShowErrors(true);
+              notifyMissing(currentStep.fields);
+            }
+            return;
+          }
+          if (allFilled) {
+            setShowErrors(false);
+            handleSubmit(e);
+          } else {
+            setShowErrors(true);
+            notifyMissing(steps.flatMap(s => s.fields) as (keyof PredictionInput)[]);
+          }
+        }}
+      >
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col md:flex-row md:flex-wrap gap-3">
             {steps.map((s, idx) => (
@@ -139,14 +176,18 @@ export default function PredictionForm() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{field.helper}</p>
 
                 {field.type === "binary" ? (
-                  <div className="mt-3 flex gap-4 text-sm text-slate-700 dark:text-slate-200">
+                  <div
+                    className={`mt-3 flex gap-4 text-sm text-slate-700 dark:text-slate-200 ${
+                      showErrors && !filled[field.name] ? "border border-red-500/60 rounded-lg px-3 py-2" : ""
+                    }`}
+                  >
                     {[{ value: 1, label: "Iya" }, { value: 0, label: "Tidak" }].map(option => (
                       <label key={option.value} className="inline-flex items-center gap-2">
                         <input
                           type="radio"
                           name={field.name}
                           value={option.value}
-                          defaultChecked={option.value === form[field.name]}
+                          checked={form[field.name] === option.value}
                           onChange={handleChange}
                           className="h-4 w-4 text-slate-900 dark:text-slate-100"
                         />
@@ -159,6 +200,10 @@ export default function PredictionForm() {
                     name={field.name}
                     type="number"
                     onChange={handleChange}
+                    value={filled[field.name] ? form[field.name] : ""}
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
                     className="
                       w-full mt-2 rounded-xl border
                       border-slate-300 dark:border-slate-700
@@ -166,6 +211,11 @@ export default function PredictionForm() {
                       px-4 py-3
                       text-slate-700 dark:text-slate-200
                     "
+                    style={
+                      showErrors && !filled[field.name]
+                        ? { borderColor: "rgba(239,68,68,0.8)", boxShadow: "0 0 0 1px rgba(239,68,68,0.4)" }
+                        : undefined
+                    }
                   />
                 )}
               </div>
@@ -201,6 +251,12 @@ export default function PredictionForm() {
           </button>
         </div>
       </form>
+
+      {toast && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 px-4 py-3 rounded-xl shadow-lg bg-red-500 text-white text-sm z-50">
+          {toast}
+        </div>
+      )}
 
       {result && <ResultCard result={result} />}
     </>
