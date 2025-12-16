@@ -2,7 +2,7 @@
 
 Aplikasi web sederhana untuk memprediksi harga rumah menggunakan Machine Learning.
 
-Project ini terdiri dari **Backend** (Python/FastAPI) yang menangani logika prediksi & model ML, dan **Frontend** (HTML/JS) sebagai antarmuka pengguna.
+Project ini terdiri dari **Backend** (Python/FastAPI) yang menangani logika prediksi & model ML, dan **Frontend** (React + Vite + Tailwind) sebagai antarmuka pengguna.
 
 ## Struktur Folder Project
 
@@ -20,11 +20,13 @@ house-prediction/
 │   └── requirements.txt         # Daftar library
 │
 └── frontend/
-    └── index.html               # Tampilan Website
+    ├── src/                     # React components, hooks, styles
+    ├── public/
+    └── package.json             # Dependensi frontend (React, Vite, Tailwind)
 ```
 ## Teknologi
-Backend: Python 3.x, FastAPI, Scikit-Learn, Numpy, Joblib.
-Frontend: HTML5, CSS (Tailwind via CDN), JavaScript (Fetch API).
+Backend: Python 3.x, FastAPI, Scikit-Learn, Numpy, Joblib.  
+Frontend: React 19, Vite, TypeScript, Tailwind CSS 4.  
 Data: Model dilatih menggunakan Polynomial Ridge Regression.
 
 <b>Cara Menjalankan Aplikasi</b>
@@ -57,9 +59,14 @@ Ikuti langkah-langkah berikut untuk menjalankan project di komputer lokal (Local
         <b>Note</b>: Jika berhasil, terminal akan menampilkan: <i>Application startup complete. Uvicorn running on https://www.google.com/search?q=http://127.0.0.1:8000</i>
 
 2. Menjalankan Frontend (UI)
-   - Buka folder frontend.
-   - Klik dua kali file index.html untuk membukanya di Browser.
-   - Selesai! Coba masukkan angka dan klik tombol "Prediksi Harga Rumah".
+   - Buka terminal baru, masuk ke folder frontend:
+        ```bash
+        cd frontend
+        npm install
+        npm run dev
+        ```
+   - Buka URL dev server yang muncul (misal http://localhost:5173).
+   - Isi form per langkah, lalu klik “Prediksi Harga”.
 
 ### API Endpoint
 Jika ingin mengetes via Postman:
@@ -81,3 +88,7 @@ Jika ingin mengetes via Postman:
         "yr_renovated": 0
     }
     ```
+
+### Catatan Satuan Input
+- Form di frontend meminta **meter persegi (m2)** untuk semua field luas (mis. `sqft_living`, `sqft_lot`, `sqft_above`, `sqft_basement`).  
+- Backend otomatis mengonversi nilai m2 tersebut ke **square feet (sqft)** sebelum dikirim ke model.
