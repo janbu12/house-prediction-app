@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 import type { PredictionInput, PredictionResponse } from "../types/prediction";
 import ResultCard from "./ResultCard";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 const initialState: PredictionInput = {
   bedrooms: 0,
   bathrooms: 0,
@@ -92,7 +94,7 @@ export default function PredictionForm() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch("http://127.0.0.1:8000/predict", {
+    const res = await fetch(`${API_URL}/predict`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
