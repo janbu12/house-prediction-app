@@ -167,7 +167,7 @@ export default function PredictionForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {fields
-            .filter(f => currentStep.fields.includes(f.name as (typeof currentStep.fields)[number]))
+            .filter(f => new Set<keyof PredictionInput>(currentStep.fields).has(f.name))
             .map(field => (
               <div key={field.name}>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
