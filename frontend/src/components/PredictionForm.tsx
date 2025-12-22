@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Map, Marker } from "pigeon-maps";
 import type { PredictionInput, PredictionResponse } from "../types/prediction";
