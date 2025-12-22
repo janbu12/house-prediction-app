@@ -1,20 +1,32 @@
 export interface PredictionInput {
-  bedrooms: number;
-  bathrooms: number;
-  sqft_living: number;
-  sqft_lot: number;
-  floors: number;
-  waterfront: number;
-  condition: number;
-  grade: number;
-  sqft_above: number;
-  sqft_basement: number;
-  yr_built: number;
-  yr_renovated: number;
+  Land: number;
+  Building: number;
+  Bedroom: number;
+  Bathroom: number;
+  Carport: number;
+  Latitude: number;
+  Longitude: number;
+  Month: number;
+  City_Regency: string;
+  Location: string;
+}
+
+export interface SimilarItem {
+  Price: number;
+  Location: string;
+  "City/Regency": string;
+  Bedroom: number;
+  Bathroom: number;
+  Carport: number;
+  Land: number;
+  Building: number;
+  Latitude: number;
+  Longitude: number;
+  Month: number;
 }
 
 export interface PredictionResponse {
-  price_usd: number;
-  price_idr: number;
-  exchange_rate: number;
+  predicted_price: number;
+  formatted: string;
+  similar?: SimilarItem[];
 }
