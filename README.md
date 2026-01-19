@@ -54,9 +54,9 @@ Ikuti langkah-langkah berikut untuk menjalankan project di komputer lokal (Local
         ```
    - Jalankan server:
         ```bash
-        uvicorn app.main:app --reload
+        uvicorn app.bandung:app --reload
         ```
-        <b>Note</b>: Jika berhasil, terminal akan menampilkan: <i>Application startup complete. Uvicorn running on https://www.google.com/search?q=http://127.0.0.1:8000</i>
+        <b>Note</b>: Jika berhasil, terminal akan menampilkan: <i>Application startup complete. Uvicorn running on http://127.0.0.1:8000</i>
 
 2. Menjalankan Frontend (UI)
    - Buka terminal baru, masuk ke folder frontend:
@@ -74,21 +74,18 @@ Jika ingin mengetes via Postman:
   - Body (JSON):
     ```JSON
     {
-        "bedrooms": 3,
-        "bathrooms": 2,
-        "sqft_living": 1800,
-        "sqft_lot": 4000,
-        "floors": 1,
-        "waterfront": 0,
-        "condition": 3,
-        "grade": 7,
-        "sqft_above": 1800,
-        "sqft_basement": 0,
-        "yr_built": 1995,
-        "yr_renovated": 0
+        "Land": 120,
+        "Building": 90,
+        "Bedroom": 3,
+        "Bathroom": 2,
+        "Carport": 1,
+        "Latitude": -6.9175,
+        "Longitude": 107.6191,
+        "Month": 5,
+        "City_Regency": "Kota Bandung",
+        "Location": "Bojongloa Kaler"
     }
     ```
 
 ### Catatan Satuan Input
-- Form di frontend meminta **meter persegi (m2)** untuk semua field luas (mis. `sqft_living`, `sqft_lot`, `sqft_above`, `sqft_basement`).  
-- Backend otomatis mengonversi nilai m2 tersebut ke **square feet (sqft)** sebelum dikirim ke model.
+- Form di frontend meminta **meter persegi (m2)** untuk field luas (`Land`, `Building`).
