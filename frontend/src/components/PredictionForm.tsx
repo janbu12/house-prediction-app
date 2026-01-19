@@ -32,7 +32,6 @@ const fields: {
   { name: "Bedroom", label: "Jumlah kamar tidur", helper: "Bilangan bulat.", min: 1, max: 20, step: 1 },
   { name: "Bathroom", label: "Jumlah kamar mandi", helper: "Boleh desimal, misal 1.5.", min: 1, max: 20, step: 0.5 },
   { name: "Carport", label: "Jumlah carport/garasi", helper: "Total kapasitas parkir tertutup.", min: 0, max: 10, step: 1 },
-  { name: "Month", label: "Bulan transaksi", helper: "Otomatis diisi bulan berjalan.", min: 1, max: 12, step: 1 },
   { name: "Latitude", label: "Latitude", helper: "Klik peta untuk mengisi otomatis.", step: 0.000001 },
   { name: "Longitude", label: "Longitude", helper: "Klik peta untuk mengisi otomatis.", step: 0.000001 },
   { name: "City_Regency", label: "Kota/Kabupaten", helper: "Terisi otomatis dari peta, bisa disunting manual." },
@@ -43,8 +42,8 @@ const steps = [
   {
     key: "property",
     title: "Data Properti",
-    description: "Isi informasi luas, kamar, carport, dan bulan.",
-    fields: ["Land", "Building", "Bedroom", "Bathroom", "Carport", "Month"] as const,
+    description: "Isi informasi luas, kamar, dan carport.",
+    fields: ["Land", "Building", "Bedroom", "Bathroom", "Carport"] as const,
   },
   {
     key: "location",
@@ -256,7 +255,6 @@ export default function PredictionForm() {
                     min={field.min}
                     max={field.max}
                     step={field.step}
-                    disabled={field.name === "Month"}
                     className="
                       w-full mt-2 rounded-xl border
                       border-slate-300 dark:border-slate-700
