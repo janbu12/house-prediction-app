@@ -309,7 +309,7 @@ export default function PredictionForm() {
         </div>
       )}
 
-      {result && <ResultCard result={result} />}
+      {result && <ResultCard result={result} input={form} />}
     </>
   );
 }
