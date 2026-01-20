@@ -25,7 +25,9 @@ function buildRumah123Url(input: PredictionInput, predictedPrice?: number) {
   }
   params.set("bathroom", String(Math.max(1, Math.round(input.Bathroom))));
   params.set("bedroom", String(Math.max(1, Math.round(input.Bedroom))));
-  params.append("propertyFacilities[]", "15");
+  if (input.Carport > 0) {
+    params.append("propertyFacilities[]", "15");
+  }
   params.set("maxBuiltupSize", String(building));
   params.set("maxLandArea", String(land));
   params.set("maxPrice", String(maxPrice));
@@ -44,7 +46,9 @@ function buildRumah123RegionUrl(region: string, input: PredictionInput, predicte
   const params = new URLSearchParams();
   params.set("bathroom", String(Math.max(1, Math.round(input.Bathroom))));
   params.set("bedroom", String(Math.max(1, Math.round(input.Bedroom))));
-  params.append("propertyFacilities[]", "15");
+  if (input.Carport > 0) {
+    params.append("propertyFacilities[]", "15");
+  }
   params.set("maxBuiltupSize", String(building));
   params.set("maxLandArea", String(land));
   params.set("maxPrice", String(maxPrice));
