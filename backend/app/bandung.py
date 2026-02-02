@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import joblib
 from pathlib import Path
+import csv
+from datetime import datetime, timezone
 
 # =====================
 # Load model & schema
@@ -17,6 +19,10 @@ SIMILAR_DF = pd.read_csv(BASE_DIR / "dataset" / "clean_df.csv")
 EXPECTED_FEATURES = schema["features"]
 NUMERIC_COLS = schema["numeric_features"]
 CATEGORICAL_COLS = schema["categorical_features"]
+
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOG_FILE = LOG_DIR / "predictions.csv"
 
 # =====================
 # FastAPI init
@@ -80,6 +86,30 @@ def predict_price_rupiah(model, X_input: pd.DataFrame):
     log_price = model.predict(X_input)[0]
     real_price = np.expm1(log_price)
     return real_price, format_rupiah(real_price)
+
+def append_prediction_log(data: HouseInput, predicted_price: float, formatted: str):
+    row = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "Land": data.Land,
+        "Building": data.Building,
+        "Bedroom": data.Bedroom,
+        "Bathroom": data.Bathroom,
+        "Carport": data.Carport,
+        "Latitude": data.Latitude,
+        "Longitude": data.Longitude,
+        "Month": data.Month,
+        "City_Regency": data.City_Regency,
+        "Location": data.Location,
+        "predicted_price": round(predicted_price, 0),
+        "formatted": formatted,
+    }
+
+    write_header = not LOG_FILE.exists()
+    with LOG_FILE.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=row.keys())
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -165,6 +195,7 @@ def predict_price(data: HouseInput):
 
     price_numeric, price_rupiah = predict_price_rupiah(model, X_ready)
     similar = find_similar(data, price_numeric)
+    append_prediction_log(data, price_numeric, price_rupiah)
 
     return {
         "predicted_price": round(price_numeric, 0),
