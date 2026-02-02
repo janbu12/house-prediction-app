@@ -111,6 +111,19 @@ def append_prediction_log(data: HouseInput, predicted_price: float, formatted: s
             writer.writeheader()
         writer.writerow(row)
 
+@app.get("/logs")
+def get_logs(limit: int = 50):
+    if not LOG_FILE.exists():
+        return {"logs": []}
+
+    with LOG_FILE.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+
+    if limit < 1:
+        limit = 1
+    return {"logs": rows[-limit:]}
+
 
 def haversine(lat1, lon1, lat2, lon2):
     r = 6371  # km
